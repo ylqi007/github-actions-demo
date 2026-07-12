@@ -1,0 +1,35 @@
+name: Environment Variables and Secrets Demo
+
+on:
+  push:
+    paths:
+      - "environment_demo.py"
+      - ".github/workflows/environment-demo.yml"
+  workflow_dispatch:
+
+jobs:
+  environment-demo:
+    runs-on: ubuntu-24.04
+
+    env:
+      APP_ENV: github-actions
+
+    steps:
+      - name: Download repository code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+    #   - name: Check environment variable
+    #     run: |
+    #       echo "APP_ENV=$APP_ENV"
+    #       printenv APP_ENV
+
+      - name: Run environment demo
+        env:
+          APP_ENV: github-actions-in-step-level
+          DEMO_SECRET: ${{ secrets.DEMO_SECRET }}
+        run: python environment_demo.py
