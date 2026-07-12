@@ -8,6 +8,7 @@ A collection of small, incremental demos for learning GitHub Actions from scratc
 * ✅ **Demo 02** - Automatically run a Python program on `push`
 * ✅ **Demo 03** - Install and use Python dependencies with `requirements.txt`
 * ✅ **Demo 04** - Use environment variables and GitHub Secrets
+* ✅ **Demo 05** - Scheduled Workflows (Cron)
 
 ## Key Concepts Learned
 
@@ -47,6 +48,7 @@ github-actions-demo/
 * [Demo 02 - Run Python on Push](docs/demo-02-run-python.md)
 * [Demo 03 - Python Dependencies](docs/demo-03-python-dependencies.md)
 * [Demo 04 - Environment Variables and Secrets](docs/demo-04-environment-variables-and-secrets.md)
+* - [Demo 05 - Scheduled Workflows](docs/demo-05-scheduled-workflow.md)
 
 ## Current Workflow
 

@@ -1,0 +1,23 @@
+name: Scheduled Workflow Demo
+
+on:
+  schedule:
+    - cron: "37 23 * * 1-5"
+
+  workflow_dispatch:
+
+jobs:
+  scheduled-demo:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Download repository code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run scheduled demo
+        run: python scheduled_demo.py
