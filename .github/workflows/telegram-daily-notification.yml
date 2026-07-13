@@ -49,9 +49,51 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPOSITORY: ${{ github.event.repository.name }}
+          BRANCH: ${{ github.ref_name }}
+          TRIGGER: ${{ github.event_name }}
+          RUN_NUMBER: ${{ github.run_number }}
         shell: bash
         run: |
           current_date="$(TZ=America/Los_Angeles date '+%A, %B %d, %Y')"
+          current_time="$(TZ=America/Los_Angeles date '+%I:%M:%S %p %Z')"
 
-          ./demo-06-telegram-notification/scripts/send-telegram-message.sh \
-            "Good morning! Today is ${current_date}. This message was sent automatically by GitHub Actions."
+          quotes_file="demo-06-telegram-notification/quotes.txt"
+
+          if [[ ! -f "${quotes_file}" ]]; then
+            echo "Error: quotes file not found: ${quotes_file}"
+            echo "Current working directory:"
+            pwd
+            echo "Repository files:"
+            find . -maxdepth 3 -type f | sort
+            exit 1
+          fi
+
+          quote="$(grep -v '^[[:space:]]*$' "${quotes_file}" | shuf -n 1)"
+
+          if [[ -z "${quote}" ]]; then
+            echo "Error: no non-empty quote found in ${quotes_file}"
+            exit 1
+          fi
+
+          # act 本地运行时，部分 GitHub context 可能为空，提供默认值
+          repository="${REPOSITORY:-github-actions-demo}"
+          branch="${BRANCH:-main}"
+          trigger="${TRIGGER:-workflow_dispatch}"
+          run_number="${RUN_NUMBER:-1}"
+
+          message="🌅 早上好！今日寄语
+          ✅ ${quote}
+
+          📅 ${current_date}
+          🕗 ${current_time}
+
+          📦 Repository：${repository}
+          🌿 Branch：${branch}
+          👤 Trigger：${trigger}
+          🔢 Run Number：${run_number}"
+        
+          echo "Message to send:"
+          printf '%s\n' "${message}"
+
+          ./demo-06-telegram-notification/scripts/send-telegram-message.sh "${message}"
