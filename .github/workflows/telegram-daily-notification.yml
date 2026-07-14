@@ -2,14 +2,10 @@ name: Daily Telegram Notification
 
 on:
   workflow_dispatch:
+
   schedule:
-    # 8:45 AM PDT = 15:45 UTC
-    # 8:45 AM PST = 16:45 UTC
-    #
-    # GitHub Actions cron uses UTC. We run at both possible UTC times
-    # and verify the actual Los Angeles local time inside the job.
-    - cron: "45 15 * * *"
-    - cron: "45 16 * * *"
+    - cron: "45 8 * * *"
+      timezone: "America/Los_Angeles"
 
 permissions:
   contents: read
@@ -23,29 +19,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Check Pacific local time
-        id: local-time
-        shell: bash
-        run: |
-          local_time="$(TZ=America/Los_Angeles date '+%H:%M')"
-          local_date="$(TZ=America/Los_Angeles date '+%Y-%m-%d')"
-
-          echo "Current Pacific date: ${local_date}"
-          echo "Current Pacific time: ${local_time}"
-
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "should_send=true" >> "$GITHUB_OUTPUT"
-            echo "Manual run detected. Message will be sent."
-          elif [[ "${local_time}" == "08:45" ]]; then
-            echo "should_send=true" >> "$GITHUB_OUTPUT"
-            echo "Scheduled time matched. Message will be sent."
-          else
-            echo "should_send=false" >> "$GITHUB_OUTPUT"
-            echo "Scheduled time did not match 08:45 Pacific. Skipping."
-          fi
-
       - name: Send Telegram message
-        if: steps.local-time.outputs.should_send == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -55,6 +29,8 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
         shell: bash
         run: |
+          set -Eeuo pipefail
+
           current_date="$(TZ=America/Los_Angeles date '+%A, %B %d, %Y')"
           current_time="$(TZ=America/Los_Angeles date '+%I:%M:%S %p %Z')"
 
@@ -76,11 +52,10 @@ jobs:
             exit 1
           fi
 
-          # act 本地运行时，部分 GitHub context 可能为空，提供默认值
           repository="${REPOSITORY:-github-actions-demo}"
           branch="${BRANCH:-main}"
-          trigger="${TRIGGER:-workflow_dispatch}"
-          run_number="${RUN_NUMBER:-1}"
+          trigger="${TRIGGER:-unknown}"
+          run_number="${RUN_NUMBER:-unknown}"
 
           message="🌅 早上好！今日寄语
           ✅ ${quote}
